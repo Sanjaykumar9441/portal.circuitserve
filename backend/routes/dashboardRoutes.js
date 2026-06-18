@@ -11,15 +11,13 @@ router.get("/stats", async (req, res) => {
 
     const totalReports = await Progress.countDocuments();
 
-    const completedReports =
-      await Progress.countDocuments({
-        status: "Completed",
-      });
+    const completedReports = await Progress.countDocuments({
+      status: "Completed",
+    });
 
-    const inProgressReports =
-      await Progress.countDocuments({
-        status: "In Progress",
-      });
+    const inProgressReports = await Progress.countDocuments({
+      status: "In Progress",
+    });
 
     const recentReports = await Progress.find()
       .sort({ submittedAt: -1 })
@@ -42,7 +40,9 @@ router.get("/stats", async (req, res) => {
 /* Team Status */
 router.get("/team-status", async (req, res) => {
   try {
-    const users = await User.find().select("-password");
+    const users = await User.find({
+      role: { $ne: "admin" },
+    }).select("-password");
 
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -54,9 +54,7 @@ router.get("/team-status", async (req, res) => {
     });
 
     const team = users.map((user) => {
-      const submitted = reports.find(
-        (report) => report.name === user.name
-      );
+      const submitted = reports.find((report) => report.name === user.name);
 
       return {
         ...user.toObject(),
