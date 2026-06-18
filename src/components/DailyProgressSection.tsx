@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 
 const DailyProgressSection = () => {
   const navigate = useNavigate();
+
   return (
     <section className="relative py-24 bg-[#08101f]">
       <div className="container mx-auto px-6">
@@ -20,30 +21,23 @@ const DailyProgressSection = () => {
                 <ClipboardList className="h-10 w-10 text-cyan-400" />
               </div>
             </div>
-
             <h2 className="text-center text-4xl font-bold text-white">
               Daily Progress Updates
             </h2>
-
             <p className="mt-4 text-center text-slate-400 max-w-2xl mx-auto">
               All CircuitServe team members are required to submit their daily
-              progress updates. This helps us track project development,
-              maintain accountability, and ensure smooth collaboration.
+              progress updates. This helps us track project development, maintain
+              accountability, and ensure smooth collaboration.
             </p>
-
             <div className="mt-10 flex justify-center">
               <button
                 onClick={() => navigate("/daily-progress")}
                 className="group flex items-center gap-3 rounded-xl bg-cyan-500 px-8 py-4 text-black font-semibold hover:bg-cyan-400 transition-all duration-300"
               >
                 Submit Today's Progress
-                <ArrowRight
-                  size={18}
-                  className="group-hover:translate-x-1 transition"
-                />
+                <ArrowRight size={18} className="group-hover:translate-x-1 transition" />
               </button>
             </div>
-
             <div className="mt-8 text-center text-sm text-slate-500">
               Deadline: Submit before 11:59 PM every day
             </div>

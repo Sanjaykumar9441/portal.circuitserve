@@ -2,54 +2,58 @@ import { useRef, useState } from "react";
 import axios from "axios";
 
 const DailyProgress = () => {
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [selectedName, setSelectedName] = useState("");
+  const selectedName = user.name || "";
   const [document, setDocument] = useState<File | null>(null);
   const [tasks, setTasks] = useState("");
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState("");
   const [hoursWorked, setHoursWorked] = useState("");
+  const [tomorrowPlan, setTomorrowPlan] = useState("");
 
-  const roleMap: Record<string, string> = {
-    "Sanjay Kumar": "Developer",
-    "Sanjay Siva Kumar": "VLSI",
-    "Naveen Sai": "IoT",
-    "Saketh Ram": "IoT",
-    Rakesh: "PCB",
-    Varshith: "PCB",
-  };
+  const userRole = user.role || "member";
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    try {
-      setLoading(true);
+  try {
+    setLoading(true);
 
-      await axios.post(
-        "http://localhost:5000/api/progress",
-        {
-          name: selectedName,
-          role: roleMap[selectedName],
-          tasks,
-          status,
-          hoursWorked,
-        }
-      );
+    const token = localStorage.getItem("token");
 
-      alert("Progress Submitted Successfully");
+    await axios.post(
+      `${import.meta.env.VITE_API_URL}/api/progress`,
+      {
+        name: selectedName,
+        role: userRole,
+        tasks,
+        status,
+        hoursWorked,
+        tomorrowPlan,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
 
-      setTasks("");
-      setStatus("");
-      setHoursWorked("");
-      setDocument(null);
-    } catch (error) {
-      console.error(error);
-      alert("Submission Failed");
-    } finally {
-      setLoading(false);
-    }
-  };
+    alert("Progress Submitted Successfully");
+
+    setTasks("");
+    setStatus("");
+    setHoursWorked("");
+    setTomorrowPlan("");
+    setDocument(null);
+  } catch (error) {
+    console.error(error);
+    alert("Submission Failed");
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="min-h-screen bg-[#050816] text-white flex items-center justify-center px-4 py-10">
@@ -60,149 +64,134 @@ const DailyProgress = () => {
           Submit your daily work progress for CircuitServe Technologies.
         </p>
 
+        <div className="mb-6 p-4 rounded-xl bg-slate-800 border border-slate-700">
+          <p className="text-slate-400 text-sm">Logged in as</p>
+          <h3 className="text-white font-semibold">{selectedName}</h3>
+          <p className="text-cyan-400 capitalize">{userRole}</p>
+        </div>
+
         <form onSubmit={handleSubmit}>
-          {/* Name */}
-          <select
+          {/* Role */}
+          <div className="mb-4">
+            <input
+              type="text"
+              value={`Role: ${userRole}`}
+              readOnly
+              className="w-full p-4 rounded-xl bg-slate-800 border border-slate-700 text-cyan-400 font-semibold"
+            />
+          </div>
+
+          {/* Date */}
+          <div className="mb-4">
+            <label className="block mb-2 text-slate-300">Submission Date</label>
+
+            <input
+              type="text"
+              value={new Date().toLocaleDateString("en-IN")}
+              readOnly
+              className="w-full p-4 rounded-xl bg-slate-800 border border-slate-700 text-slate-300"
+            />
+          </div>
+
+          {/* Tasks */}
+          <textarea
             required
-            value={selectedName}
-            onChange={(e) => setSelectedName(e.target.value)}
+            value={tasks}
+            onChange={(e) => setTasks(e.target.value)}
+            rows={4}
+            placeholder="Tasks Completed Today in Paragraph"
             className="w-full p-4 mb-4 rounded-xl bg-slate-800 border border-slate-700 focus:outline-none focus:border-cyan-500"
-          >
-            <option value="">Select Your Name</option>
+          />
 
-            <option value="Sanjay Kumar">Sanjay Kumar</option>
-            <option value="Sanjay Siva Kumar">Sanjay Siva Kumar</option>
-            <option value="Naveen Sai">Naveen Sai</option>
-            <option value="Rakesh">Rakesh</option>
-            <option value="Saketh Ram">Saketh Ram</option>
-            <option value="Varshith">Varshith</option>
-          </select>
+          <p className="text-xs text-slate-500 mb-4 text-right">
+            {tasks.length} characters
+          </p>
 
-          {selectedName && (
-            <>
-              {/* Role */}
-              <div className="mb-4">
-                <input
-                  type="text"
-                  value={`Role: ${roleMap[selectedName] || ""}`}
-                  readOnly
-                  className="w-full p-4 rounded-xl bg-slate-800 border border-slate-700 text-cyan-400 font-semibold"
-                />
-              </div>
+          {/* Document Upload */}
+          <div className="mb-4">
+            <label className="block mb-2 text-slate-300">
+              Upload Supporting Document{" "}
+              <span className="text-slate-500 text-sm">(Optional)</span>
+            </label>
 
-              {/* Date */}
-              <div className="mb-4">
-                <label className="block mb-2 text-slate-300">
-                  Submission Date
-                </label>
+            {/* Hidden Input */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.zip,.rar,.jpg,.jpeg,.png"
+              onChange={(e) => setDocument(e.target.files?.[0] || null)}
+              className="hidden"
+            />
 
-                <input
-                  type="text"
-                  value={new Date().toLocaleDateString("en-IN")}
-                  readOnly
-                  className="w-full p-4 rounded-xl bg-slate-800 border border-slate-700 text-slate-300"
-                />
-              </div>
+            {/* Upload Button */}
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="px-5 py-3 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black font-semibold"
+            >
+              Upload File
+            </button>
 
-              {/* Tasks */}
-              <textarea
-                required
-                value={tasks}
-                onChange={(e) => setTasks(e.target.value)}
-                rows={4}
-                placeholder="Tasks Completed Today in Paragraph"
-                className="w-full p-4 mb-4 rounded-xl bg-slate-800 border border-slate-700 focus:outline-none focus:border-cyan-500"
-              />
+            {/* Selected File */}
+            {document && (
+              <div className="mt-3 flex items-center justify-between bg-slate-800 border border-slate-700 rounded-xl p-3">
+                <span className="text-green-400 text-sm truncate">
+                  📄 {document.name}
+                </span>
 
-              <p className="text-xs text-slate-500 mb-4 text-right">
-                {tasks.length} characters
-              </p>
-
-              {/* Document Upload */}
-              <div className="mb-4">
-                <label className="block mb-2 text-slate-300">
-                  Upload Supporting Document{" "}
-                  <span className="text-slate-500 text-sm">(Optional)</span>
-                </label>
-
-                {/* Hidden Input */}
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.zip,.rar,.jpg,.jpeg,.png"
-                  onChange={(e) => setDocument(e.target.files?.[0] || null)}
-                  className="hidden"
-                />
-
-                {/* Upload Button */}
                 <button
                   type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  className="px-5 py-3 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black font-semibold"
+                  onClick={() => {
+                    setDocument(null);
+                    if (fileInputRef.current) {
+                      fileInputRef.current.value = "";
+                    }
+                  }}
+                  className="text-red-400 hover:text-red-300 text-sm font-medium"
                 >
-                  Upload File
+                  Remove
                 </button>
-
-                {/* Selected File */}
-                {document && (
-                  <div className="mt-3 flex items-center justify-between bg-slate-800 border border-slate-700 rounded-xl p-3">
-                    <span className="text-green-400 text-sm truncate">
-                      📄 {document.name}
-                    </span>
-
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setDocument(null);
-                        if (fileInputRef.current) {
-                          fileInputRef.current.value = "";
-                        }
-                      }}
-                      className="text-red-400 hover:text-red-300 text-sm font-medium"
-                    >
-                      Remove
-                    </button>
-                  </div>
-                )}
-
-                <p className="text-xs text-slate-500 mt-2">
-                  Supported formats: PDF, DOC, DOCX, PPT, PPTX, XLS, XLSX, ZIP,
-                  RAR, JPG, PNG
-                </p>
               </div>
+            )}
 
-              {/* Status */}
-              <select
-                required
-                value={status}
-                onChange={(e) => setStatus(e.target.value)}
-                className="w-full p-4 mb-4 rounded-xl bg-slate-800 border border-slate-700 focus:outline-none focus:border-cyan-500"
-              >
-                <option value="">Select Status</option>
-                <option value="Completed">Completed</option>
-                <option value="In Progress">In Progress</option>
-              </select>
+            <p className="text-xs text-slate-500 mt-2">
+              Supported formats: PDF, DOC, DOCX, PPT, PPTX, XLS, XLSX, ZIP, RAR,
+              JPG, PNG
+            </p>
+          </div>
 
-              {/* Hours */}
-              <input
-                required
-                type="number"
-                min="0"
-                max="24"
-                value={hoursWorked}
-                onChange={(e) => setHoursWorked(e.target.value)}
-                placeholder="Hours Worked"
-                className="w-full p-4 mb-4 rounded-xl bg-slate-800 border border-slate-700 focus:outline-none focus:border-cyan-500"
-              />
+          {/* Status */}
+          <select
+            required
+            value={status}
+            onChange={(e) => setStatus(e.target.value)}
+            className="w-full p-4 mb-4 rounded-xl bg-slate-800 border border-slate-700 focus:outline-none focus:border-cyan-500"
+          >
+            <option value="">Select Status</option>
+            <option value="Completed">Completed</option>
+            <option value="In Progress">In Progress</option>
+          </select>
 
-              {/* Tomorrow Plan */}
-              <textarea
-                rows={3}
-                placeholder="Plan for Tomorrow"
-                className="w-full p-4 mb-6 rounded-xl bg-slate-800 border border-slate-700 focus:outline-none focus:border-cyan-500"
-              />
-            </>
-          )}
+          {/* Hours */}
+          <input
+            required
+            type="number"
+            min="0"
+            max="24"
+            value={hoursWorked}
+            onChange={(e) => setHoursWorked(e.target.value)}
+            placeholder="Hours Worked"
+            className="w-full p-4 mb-4 rounded-xl bg-slate-800 border border-slate-700 focus:outline-none focus:border-cyan-500"
+          />
+
+          {/* Tomorrow Plan */}
+          <textarea
+            rows={3}
+            value={tomorrowPlan}
+            onChange={(e) => setTomorrowPlan(e.target.value)}
+            placeholder="Plan for Tomorrow"
+            className="w-full p-4 mb-6 rounded-xl bg-slate-800 border border-slate-700 focus:outline-none focus:border-cyan-500"
+          />
 
           <button
             type="submit"

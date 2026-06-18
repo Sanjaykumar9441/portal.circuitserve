@@ -1,46 +1,49 @@
-import {
-  Users,
-  FileText,
-  CheckCircle,
-  Clock,
-} from "lucide-react";
-
-import reports from "../data/mockReports";
+import { Users, FileText, CheckCircle, Clock, } from "lucide-react";
+import { useEffect, useState } from "react";
+import axios from "axios";
 
 const AdminDashboard = () => {
-  const totalMembers = 6;
 
-  const totalReports = reports.length;
+    const [stats, setStats] = useState<any>(null);
 
-  const completedReports = reports.filter(
-    (report) => report.status === "Completed"
-  ).length;
+useEffect(() => {
+  fetchDashboard();
+}, []);
 
-  const pendingReports =
-    totalMembers - completedReports;
+const fetchDashboard = async () => {
+  try {
+    const { data } = await axios.get(
+      `${import.meta.env.VITE_API_URL}/api/dashboard/stats`
+    );
 
-  const stats = [
-    {
-      title: "Team Members",
-      value: totalMembers,
-      icon: Users,
-    },
-    {
-      title: "Reports Submitted",
-      value: totalReports,
-      icon: FileText,
-    },
-    {
-      title: "Completed",
-      value: completedReports,
-      icon: CheckCircle,
-    },
-    {
-      title: "Pending",
-      value: pendingReports,
-      icon: Clock,
-    },
-  ];
+    setStats(data);
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+  const dashboardCards = [
+  {
+    title: "Team Members",
+    value: stats?.totalMembers || 0,
+    icon: Users,
+  },
+  {
+    title: "Reports Submitted",
+    value: stats?.totalReports || 0,
+    icon: FileText,
+  },
+  {
+    title: "Completed",
+    value: stats?.completedReports || 0,
+    icon: CheckCircle,
+  },
+  {
+    title: "In Progress",
+    value: stats?.inProgressReports || 0,
+    icon: Clock,
+  },
+];
 
   return (
     <div>
@@ -56,7 +59,7 @@ const AdminDashboard = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
 
-        {stats.map((item) => {
+        {dashboardCards.map((item) => {
           const Icon = item.icon;
 
           return (
@@ -96,9 +99,9 @@ const AdminDashboard = () => {
 
         <div className="space-y-4">
 
-          {reports.slice(0, 5).map((report) => (
+          {stats?.recentReports?.map((report: any) => (
             <div
-              key={report.id}
+              key={report._id}
               className="flex justify-between items-center border-b border-slate-800 pb-4"
             >
               <div>

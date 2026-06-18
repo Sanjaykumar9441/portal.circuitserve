@@ -1,65 +1,66 @@
-import { FileText, Download } from "lucide-react";
-
-const documents = [
-  {
-    id: 1,
-    name: "hero-design.pdf",
-    uploadedBy: "Sanjay Kumar",
-    date: "18 Jun 2026",
-  },
-  {
-    id: 2,
-    name: "iot-progress.docx",
-    uploadedBy: "Naveen Sai",
-    date: "18 Jun 2026",
-  },
-  {
-    id: 3,
-    name: "vlsi-report.pdf",
-    uploadedBy: "Sanjay Siva Kumar",
-    date: "18 Jun 2026",
-  },
-];
+import { useEffect, useState } from "react";
+import axios from "axios";
 
 const Documents = () => {
+  const [documents, setDocuments] = useState<any[]>([]);
+
+  useEffect(() => {
+    fetchDocuments();
+  }, []);
+
+  const fetchDocuments = async () => {
+    try {
+      const token = localStorage.getItem("token");
+
+      const { data } = await axios.get(
+        `${import.meta.env.VITE_API_URL}/api/progress`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const docs = data.filter(
+        (report: any) => report.documentUrl
+      );
+
+      setDocuments(docs);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   return (
     <div>
-      <h1 className="text-4xl font-bold mb-2">
+      <h1 className="text-4xl font-bold mb-6">
         Documents
       </h1>
-
-      <p className="text-slate-400 mb-8">
-        Uploaded progress documents.
-      </p>
 
       <div className="space-y-4">
         {documents.map((doc) => (
           <div
-            key={doc.id}
-            className="bg-slate-900 border border-slate-700 rounded-2xl p-5 flex items-center justify-between"
+            key={doc._id}
+            className="bg-slate-900 border border-slate-700 rounded-2xl p-5 flex justify-between items-center"
           >
-            <div className="flex items-center gap-4">
-              <FileText className="text-cyan-400" />
+            <div>
+              <h3 className="font-semibold">
+                {doc.name}
+              </h3>
 
-              <div>
-                <h3 className="font-semibold">
-                  {doc.name}
-                </h3>
-
-                <p className="text-sm text-slate-400">
-                  Uploaded by {doc.uploadedBy}
-                </p>
-
-                <p className="text-xs text-slate-500">
-                  {doc.date}
-                </p>
-              </div>
+              <p className="text-slate-400 text-sm">
+                {doc.role}
+              </p>
             </div>
 
-            <button className="flex items-center gap-2 bg-cyan-500 text-black px-4 py-2 rounded-xl font-semibold">
-              <Download size={16} />
+            <a
+              href={`${import.meta.env.VITE_API_URL}${doc.documentUrl}`}
+              target="_blank"
+              rel="noreferrer"
+              className="bg-cyan-500 text-black px-4 py-2 rounded-lg font-semibold"
+            >
               Download
-            </button>
+            </a>
           </div>
         ))}
       </div>
