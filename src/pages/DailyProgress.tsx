@@ -1,8 +1,16 @@
 import { useRef, useState } from "react";
+import axios from "axios";
 
 const DailyProgress = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
+
   const [selectedName, setSelectedName] = useState("");
+  const [document, setDocument] = useState<File | null>(null);
+  const [tasks, setTasks] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [status, setStatus] = useState("");
+  const [hoursWorked, setHoursWorked] = useState("");
+
   const roleMap: Record<string, string> = {
     "Sanjay Kumar": "Developer",
     "Sanjay Siva Kumar": "VLSI",
@@ -11,42 +19,37 @@ const DailyProgress = () => {
     Rakesh: "PCB",
     Varshith: "PCB",
   };
-  const [document, setDocument] = useState<File | null>(null);
-  const [tasks, setTasks] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [status, setStatus] = useState("");
-  const [hoursWorked, setHoursWorked] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    console.log("Form submitted");
+    try {
+      setLoading(true);
 
-    // Backend API call here later
+      await axios.post(
+        "http://localhost:5000/api/progress",
+        {
+          name: selectedName,
+          role: roleMap[selectedName],
+          tasks,
+          status,
+          hoursWorked,
+        }
+      );
+
+      alert("Progress Submitted Successfully");
+
+      setTasks("");
+      setStatus("");
+      setHoursWorked("");
+      setDocument(null);
+    } catch (error) {
+      console.error(error);
+      alert("Submission Failed");
+    } finally {
+      setLoading(false);
+    }
   };
-
-  import axios from "axios";
-
-const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-
-  try {
-    await axios.post(
-      "http://localhost:5000/api/progress",
-      {
-        name: selectedName,
-        role: roleMap[selectedName],
-        tasks,
-        status,
-        hoursWorked,
-      }
-    );
-
-    alert("Progress Submitted");
-  } catch (error) {
-    console.error(error);
-  }
-};
 
   return (
     <div className="min-h-screen bg-[#050816] text-white flex items-center justify-center px-4 py-10">
