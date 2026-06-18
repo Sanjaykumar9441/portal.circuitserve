@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 interface Report {
   _id: string;
@@ -13,8 +14,9 @@ interface Report {
 }
 
 const Reports = () => {
+  const navigate = useNavigate();
+
   const [reports, setReports] = useState<Report[]>([]);
-  const [selectedReport, setSelectedReport] = useState<Report | null>(null);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("All");
   const [loading, setLoading] = useState(true);
@@ -114,60 +116,13 @@ const Reports = () => {
               </div>
 
               <button
-                onClick={() => setSelectedReport(report)}
+                onClick={() => navigate(`/reports/${report._id}`)}
                 className="mt-4 bg-cyan-500 text-black px-4 py-2 rounded-lg font-semibold"
               >
                 View Report
               </button>
             </div>
           ))}
-        </div>
-      )}
-
-      {selectedReport && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50">
-          <div className="bg-slate-900 border border-slate-700 rounded-3xl p-8 max-w-2xl w-full">
-            <h2 className="text-3xl font-bold mb-6">Progress Details</h2>
-
-            <div className="space-y-4">
-              <div>
-                <p className="text-slate-400">Name</p>
-                <p>{selectedReport.name}</p>
-              </div>
-
-              <div>
-                <p className="text-slate-400">Role</p>
-                <p>{selectedReport.role}</p>
-              </div>
-
-              <div>
-                <p className="text-slate-400">Tasks Completed</p>
-                <p>{selectedReport.tasks}</p>
-              </div>
-
-              <div>
-                <p className="text-slate-400">Tomorrow Plan</p>
-                <p>{selectedReport.tomorrowPlan}</p>
-              </div>
-
-              <div>
-                <p className="text-slate-400">Hours Worked</p>
-                <p>{selectedReport.hoursWorked}</p>
-              </div>
-
-              <div>
-                <p className="text-slate-400">Status</p>
-                <p>{selectedReport.status}</p>
-              </div>
-            </div>
-
-            <button
-              onClick={() => setSelectedReport(null)}
-              className="mt-6 bg-red-500 px-5 py-2 rounded-xl"
-            >
-              Close
-            </button>
-          </div>
         </div>
       )}
     </div>

@@ -10,6 +10,7 @@ import Documents from "./pages/Documents";
 import Login from "./pages/Login";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AdminRoute from "./components/AdminRoute";
+import ReportDetails from "./pages/ReportDetails";
 
 function Home() {
   return (
@@ -47,6 +48,7 @@ function App() {
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/team" element={<TeamMembers />} />
         <Route path="/reports" element={<Reports />} />
+        <Route path="/reports/:id" element={<ReportDetails />} />
         <Route path="/documents" element={<Documents />} />
       </Route>
     </Routes>

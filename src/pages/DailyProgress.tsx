@@ -16,44 +16,53 @@ const DailyProgress = () => {
   const userRole = user.role || "member";
 
   const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  try {
-    setLoading(true);
+    try {
+      setLoading(true);
 
-    const token = localStorage.getItem("token");
+      const formData = new FormData();
 
-    await axios.post(
-      `${import.meta.env.VITE_API_URL}/api/progress`,
-      {
-        name: selectedName,
-        role: userRole,
-        tasks,
-        status,
-        hoursWorked,
-        tomorrowPlan,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+      formData.append("name", selectedName);
+      formData.append("role", userRole);
+      formData.append("tasks", tasks);
+      formData.append("status", status);
+      formData.append("hoursWorked", hoursWorked);
+      formData.append("tomorrowPlan", tomorrowPlan);
+
+      if (document) {
+        formData.append("document", document);
       }
-    );
 
-    alert("Progress Submitted Successfully");
+      await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/progress`,
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            "Content-Type": "multipart/form-data",
+          },
+        },
+      );
 
-    setTasks("");
-    setStatus("");
-    setHoursWorked("");
-    setTomorrowPlan("");
-    setDocument(null);
-  } catch (error) {
-    console.error(error);
-    alert("Submission Failed");
-  } finally {
-    setLoading(false);
-  }
-};
+      alert("Progress Submitted Successfully");
+
+      setTasks("");
+      setStatus("");
+      setHoursWorked("");
+      setTomorrowPlan("");
+      setDocument(null);
+
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Submission Failed");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#050816] text-white flex items-center justify-center px-4 py-10">
